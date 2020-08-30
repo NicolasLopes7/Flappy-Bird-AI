@@ -4,29 +4,34 @@ import time
 import os
 import random
 
-WINDOW_WIDTH = 600
+WINDOW_WIDTH = 500
 WINDOW_HEIGHT = 800
 
 
-def loadimage(fileName):
-    return pygame.transform.scale2x(pygame.image.load(os.path.join("assets", fileName)))
-
-
 BIRD_IMGS = [
-    loadImage("bird1.png"),
-    loadImage("bird2.png"),
-    loadImage("bird3.png")]
+    pygame.transform.scale2x(pygame.image.load(
+        os.path.join("assets", "bird1.png"))),
+    pygame.transform.scale2x(pygame.image.load(
+        os.path.join("assets", "bird2.png"))),
+    pygame.transform.scale2x(pygame.image.load(os.path.join("assets", "bird3.png")))]
 
-PIPE_IMG = loadImage("pipe.png")
-BASE_IMG = loadImage("base.png")
-BG_IMG = loadImage("bg.png")
+PIPE_IMG = pygame.transform.scale2x(pygame.image.load(
+    os.path.join("assets", "pipe.png")))
+
+BASE_IMG = pygame.transform.scale2x(pygame.image.load(
+    os.path.join("assets", "base.png")))
+
+BG_IMG = pygame.transform.scale2x(pygame.image.load(
+    os.path.join("assets", "bg.png")))
 
 
 class Bird:
-    IMGS = BIRD_IMGS
+
+    WIN_HEIGHT = 0
+    WIN_WIDTH = 0
     MAX_ROTATION = 25
+    IMGS = BIRD_IMGS
     ROT_VEL = 20
-    ANIMATION_TIME = 5
 
     def __init__(self, x, y):
         self.x = x
@@ -44,47 +49,81 @@ class Bird:
         self.height = self.y
 
     def move(self):
+
         self.tick_count += 1
 
-        d = self.vel * self.tick_count + 1.5 * self.tick_count**2
+        displacement = self.vel*(self.tick_count) + \
+            0.5*(3)*(self.tick_count)**2
 
-        if d >= 16:
-            d = 16
+        if displacement >= 16:
+            displacement = (displacement/abs(displacement)) * 16
 
-        if d < 0:
-            d -= 2
+        if displacement < 0:
+            displacement -= 2
 
-        self.y = self.y + d
+        self.y = self.y + displacement
 
-        if d < 0 or self.y < self.height + 50:
+        if displacement < 0 or self.y < self.height + 50:
             if self.tilt < self.MAX_ROTATION:
                 self.tilt = self.MAX_ROTATION
-            else:
-                if self.tilt > -90:
-                    self.tilt -= self.ROT_VEL
+        else:
+            if self.tilt > -90:
+                self.tilt -= self.ROT_VEL
 
     def draw(self, win):
+
         self.img_count += 1
 
-        if self.img_count < self.ANIMATION_TIME:
+        if self.img_count <= 10:
             self.img = self.IMGS[0]
-        elif self.img_count < self.ANIMATION_TIME * 2:
+        elif self.img_count <= 20:
             self.img = self.IMGS[1]
-        elif self.img_count < self.ANIMATION_TIME * 3:
+        elif self.img_count <= 30:
             self.img = self.IMGS[2]
-        elif self.img_count < self.ANIMATION_TIME * 4:
-            self.img = self.IMGS[1]
-        elif self.img_count < self.ANIMATION_TIME * 4 + 1:
-            self.img = self.IMGS[0]
+        elif self.img_count == 31:
+            self.img = self.IMGS[2]
             self.img_count = 0
-        
-        if self.tilt <= 80:
-            self.img = self.IMGS[1]
-            self.img_count - self.ANIMATION_TIME*2
 
-        rotated_image = pygame.transform.rotate(self.img, self.tilt)
-        new_rect = rotated_image.get_rect(center=self.image.get_rect(topLeft = (self.x, self.y)).center)
-        win.blit(rotated_image, new_rect.topLeft)
+        blitRotateCenter(win, self.img, (self.x, self.y), self.tilt)
 
-        def get_mask(self):
-            return pygame.mask.from_surface(self.img)
+    def get_mask(self):
+        return pygame.mask.from_surface(self.img)
+
+
+class Pipe:
+    GAP = 200
+
+
+def blitRotateCenter(surf, image, topleft, angle):
+    rotated_image = pygame.transform.rotate(image, angle)
+    new_rect = rotated_image.get_rect(
+        center=image.get_rect(topleft=topleft).center)
+
+    surf.blit(rotated_image, new_rect.topleft)
+
+
+def draw_window(win, bird):
+    win.blit(BG_IMG, (0, 0))
+    bird.draw(win)
+    pygame.display.update()
+
+
+def main():
+    bird = Bird(200, 200)
+    win = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
+    clock = pygame.time.Clock()
+    running = True
+    while running:
+        clock.tick(30)
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
+
+        bird.move()
+        draw_window(win, bird)
+
+    pygame.quit()
+    quit()
+
+
+main()
