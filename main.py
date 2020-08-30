@@ -108,7 +108,7 @@ class Pipe:
         self.set_height()
 
     def set_height(self):
-        self.height = random.randRange(50, 450)
+        self.height = random.randrange(50, 450)
         self.top = self.height - self.PIPE_TOP.get_height()
         self.bottom = self.height + self.GAP
 
@@ -169,14 +169,23 @@ def blitRotateCenter(surf, image, topleft, angle):
     surf.blit(rotated_image, new_rect.topleft)
 
 
-def draw_window(win, bird):
+def draw_window(win, bird, pipes, base):
     win.blit(BG_IMG, (0, 0))
+
+    for pipe in pipes:
+        pipe.draw(win)
+
+    base.draw(win)
     bird.draw(win)
+
     pygame.display.update()
 
 
 def main():
-    bird = Bird(200, 200)
+    bird = Bird(230, 350)
+    base = Base(730)
+    pipes = [Pipe(700)]
+
     win = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
     clock = pygame.time.Clock()
     running = True
@@ -187,7 +196,11 @@ def main():
                 running = False
 
         bird.move()
-        draw_window(win, bird)
+        for pipe in pipes:
+            pipe.move()
+
+        base.move()
+        draw_window(win, bird, pipes, base)
 
     pygame.quit()
     quit()
