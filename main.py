@@ -3,10 +3,11 @@ import neat
 import time
 import os
 import random
+pygame.font.init()
+
 
 WINDOW_WIDTH = 500
 WINDOW_HEIGHT = 800
-
 
 BIRD_IMGS = [
     pygame.transform.scale2x(pygame.image.load(
@@ -23,6 +24,8 @@ BASE_IMG = pygame.transform.scale2x(pygame.image.load(
 
 BG_IMG = pygame.transform.scale2x(pygame.image.load(
     os.path.join("assets", "bg.png")))
+
+STAT_FONT = pygame.font.SysFont("comicsans", 50)
 
 
 class Bird:
@@ -169,11 +172,14 @@ def blitRotateCenter(surf, image, topleft, angle):
     surf.blit(rotated_image, new_rect.topleft)
 
 
-def draw_window(win, bird, pipes, base):
+def draw_window(win, bird, pipes, base, score):
     win.blit(BG_IMG, (0, 0))
 
     for pipe in pipes:
         pipe.draw(win)
+
+    text = STAT_FONT.render("Score: " + str(score), 1, (255, 255, 255))
+    win.blit(text, (WINDOW_WIDTH - 10 - text.get_width(), 10))
 
     base.draw(win)
     bird.draw(win)
@@ -185,6 +191,7 @@ def main():
     bird = Bird(230, 350)
     base = Base(730)
     pipes = [Pipe(600)]
+    score = 0
 
     win = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
     clock = pygame.time.Clock()
@@ -196,7 +203,7 @@ def main():
                 running = False
 
         # bird.move()
-        score = 0
+
         add_pipe = False
         rem = []
         for pipe in pipes:
@@ -219,8 +226,11 @@ def main():
         for r in rem:
             pipes.remove(r)
 
+        if bird.y + bird.img.get_height() > 730:
+            pass
+
         base.move()
-        draw_window(win, bird, pipes, base)
+        draw_window(win, bird, pipes, base, score)
 
     pygame.quit()
     quit()
